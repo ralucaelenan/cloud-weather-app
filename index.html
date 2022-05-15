@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+    <title>my weather app</title>
+
+    </head>
+    <body>
+      
+      <div class="weather-container">
+        <h1>Please introduce the city name here: </h1>
+        <div class="search-bar">
+          <input type="text" class="search-bar" name="city" id="city"/>
+          <button id="init"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1.5em"
+              width="1.5em" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z">
+              </path>
+            </svg></button>
+            <img src="https://openweathermap.org/img/wn/04n.png" alt="" class="icon1" />
+            <p class="weather"></p>
+            <p class="temperature"></p>
+        </div>
+
+     <div id="map" style="height:450px;width:100%"></div>
+     
+
+    <script>
+
+      var data={}
+      function initMap() {
+        var city= $("#city").val()
+
+        if(city === '')
+        city = "Bucharest"
+
+        $.getJSON("https:api.openweathermap.org/data/2.5/weather?q=" + city + ",ro&units=metric&appid=e3299010b45995edbdf28d7fc21e2b83",function(result){
+
+          data=result
+
+          var weather = data.weather[0].main
+          $('.weather').text(weather)
+
+          var icon = "https://openweathermap.org/img/w"+data.weather[0].icon+ ".png";
+          $('.icon').attr('src',icon);
+
+          var temp = Math.floor(data.main.temp);
+          $('.temperature').text(temp + "°C")
+
+          var lat = data.coord.lat
+          var lon = data.coord.lon
+
+          var options ={
+            zoom:9,
+            center:{lat:lat,lng:lon}
+          }
+
+          var map = new google.maps.Map(document.getElementById('map'),options);
+          google.maps.event.addListener(map,'click',function(event){
+            addMarker({coords:event.latLng});
+          });
+    
+
+          var markers = [
+            {
+              coords:{lat:lat,lng:lon}
+            }
+          ];
+
+          for(var i = 0;i<markers.length;i++){
+            addMarker(markers[i]);
+          }
+
+          function addMarker(props){
+            var marker = new google.maps.Marker({
+              position:props.coords,
+              map:map,
+            });
+            if(props.iconImage){
+              marker.setIcon(props.iconImage);
+            }
+            if(props.content){
+              var infoWindow = new google.maps.InfoWindow({
+                content:props.content
+              });
+
+              marker.addListener('click',function(){
+                infoWindow.open(map,marker);
+              });
+            }
+          }
+
+        })
+      }
+
+      $("#init").click(function(){
+        initMap();
+        document.getElementById("city").value = ""
+      })
+    </script>
+
+    <script 
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTlOZ3vQeOLGdCNXDeAiv8hWyiayRngYw&callback=initMap"
+    defer>    
+    </script>
+
+    </body>
+  
+</html>
